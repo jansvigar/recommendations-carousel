@@ -2,8 +2,8 @@ import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
-import { CSSTransitionGroup } from "react-transition-group";
 import CardItem from "./CardItem";
+import Slide from "./Slide";
 import { USER_ID } from "../config";
 import { getUserItems, rateUserItem } from "../api";
 
@@ -31,7 +31,7 @@ const styles = theme => ({
   carouselControl: {
     display: "inline-block",
     position: "absolute",
-    top: "50%",
+    top: "48%",
     right: -20,
     width: "2vw",
     height: "2vw",
@@ -41,7 +41,8 @@ const styles = theme => ({
     borderBottom: "3px solid white",
     borderLeft: "3px solid white",
     cursor: "pointer",
-    padding: "3px"
+    padding: "3px",
+    outline: "none"
   },
   next: {
     transform: "rotate(-135deg)",
@@ -50,34 +51,6 @@ const styles = theme => ({
   prev: {
     transform: "rotate(45deg)",
     left: -20
-  },
-  slideAppear: {
-    opacity: 0.01
-  },
-  slideAppearActive: {
-    opacity: 1,
-    transition: "opacity 500ms ease-in-out"
-  },
-  slideEnterNext: {
-    transform: "translateX(100%)"
-  },
-  slideEnterPrev: {
-    transform: "translateX(-100%)"
-  },
-  slideEnterActive: {
-    transform: "translateX(0)",
-    transition: "transform 0.5s ease-in-out"
-  },
-  slideExit: {
-    transform: "translateX(0)"
-  },
-  slideExitNextActive: {
-    transform: "translateX(-100%)",
-    transition: "transform 0.5s ease-in-out"
-  },
-  slideExitPrevActive: {
-    transform: "translateX(100%)",
-    transition: "transform 0.5s ease-in-out"
   }
 });
 
@@ -102,17 +75,27 @@ class Carousel extends Component {
     });
   }
   fetchEarly = () => {
-    getUserItems(USER_ID, 4, this.state.items).then(json =>
-      this.newItems.push(...json.items)
+    getUserItems(USER_ID, 4, [...this.state.items, ...this.newItems]).then(
+      json => this.newItems.push(...json.items)
     );
   };
   handleItemLike = id => {
     rateUserItem(USER_ID, id, "like").then(response => {
       if (this.newItems.length <= 1) this.fetchEarly();
+
       const newItem = this.newItems.pop();
-      const newItems = this.state.items.map(item => {
-        return item.id === id ? newItem : item;
-      });
+      let newItems;
+
+      if (newItem) {
+        newItems = this.state.items.map(item => {
+          return item.id === id ? newItem : item;
+        });
+      } else {
+        newItems = this.state.items.filter(item => {
+          return item.id !== id;
+        });
+      }
+
       this.setState({ items: newItems });
     });
   };
@@ -137,6 +120,7 @@ class Carousel extends Component {
     const showing = items.filter((item, index) => {
       return index >= currentIdx && index < currentIdx + length;
     });
+
     return (
       <Grid container className={classes.root} spacing={16}>
         <Grid item xs={12}>
@@ -144,21 +128,7 @@ class Carousel extends Component {
             Top Recommendations For You
           </Typography>
           <Grid item xs={12} className={classes.listContainer}>
-            <CSSTransitionGroup
-              transitionName={{
-                appear: classes.slideAppear,
-                appearActive: classes.slideAppearActive,
-                enter: isNext ? classes.slideEnterNext : classes.slideEnterPrev,
-                enterActive: classes.slideEnterActive,
-                leave: classes.slideExit,
-                leaveActive: isNext
-                  ? classes.slideExitNextActive
-                  : classes.slideExitPrevActive
-              }}
-              transitionAppearTimeout={500}
-              transitionEnterTimeout={500}
-              transitionLeaveTimeout={500}
-            >
+            <Slide timeout={500} isNext={isNext}>
               <Grid
                 container
                 className={classes.list}
@@ -175,7 +145,7 @@ class Carousel extends Component {
                   </Grid>
                 ))}
               </Grid>
-            </CSSTransitionGroup>
+            </Slide>
           </Grid>
         </Grid>
         <button
