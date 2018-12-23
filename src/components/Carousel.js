@@ -2,14 +2,28 @@ import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
+import { CSSTransitionGroup } from "react-transition-group";
 import CardItem from "./CardItem";
 import { API_URL } from "../config";
 
 const styles = theme => ({
   root: {
-    width: "866px",
+    width: "880px",
     margin: "auto",
     position: "relative"
+  },
+  listContainer: {
+    position: "relative",
+    height: 360,
+    overflow: "hidden"
+  },
+  list: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    margin: "auto"
   },
   carouselControl: {
     display: "inline-block",
@@ -33,6 +47,34 @@ const styles = theme => ({
   prev: {
     transform: "rotate(45deg)",
     left: -20
+  },
+  slideAppear: {
+    opacity: 0.01
+  },
+  slideAppearActive: {
+    opacity: 1,
+    transition: "opacity 500ms ease-in-out"
+  },
+  slideEnterNext: {
+    transform: "translateX(100%)"
+  },
+  slideEnterPrev: {
+    transform: "translateX(-100%)"
+  },
+  slideEnterActive: {
+    transform: "translateX(0)",
+    transition: "transform 0.5s ease-in-out"
+  },
+  slideExit: {
+    transform: "translateX(0)"
+  },
+  slideExitNextActive: {
+    transform: "translateX(-100%)",
+    transition: "transform 0.5s ease-in-out"
+  },
+  slideExitPrevActive: {
+    transform: "translateX(100%)",
+    transition: "transform 0.5s ease-in-out"
   }
 });
 
@@ -41,7 +83,8 @@ class Carousel extends Component {
     items: [],
     currentIdx: 0,
     length: 4,
-    maxLength: 16
+    maxLength: 16,
+    isNext: true
   };
 
   newItems = [];
@@ -62,7 +105,6 @@ class Carousel extends Component {
                 (item, index) => index >= this.state.maxLength
               )
             );
-            console.log(this.newItems);
           }
         )
       );
@@ -95,19 +137,21 @@ class Carousel extends Component {
   handlePreviousClick = () => {
     this.setState(prevState => {
       const newIdx = prevState.currentIdx - prevState.length;
-      return newIdx >= 0 ? { currentIdx: newIdx } : prevState;
+      return newIdx >= 0 ? { currentIdx: newIdx, isNext: false } : prevState;
     });
   };
   handleNextClick = () => {
     const { maxLength } = this.state;
     this.setState(prevState => {
       const newIdx = prevState.currentIdx + prevState.length;
-      return newIdx < maxLength ? { currentIdx: newIdx } : prevState;
+      return newIdx < maxLength
+        ? { currentIdx: newIdx, isNext: true }
+        : prevState;
     });
   };
   render() {
     const { classes } = this.props;
-    const { currentIdx, length, items } = this.state;
+    const { currentIdx, length, items, isNext } = this.state;
     const showing = items.filter((item, index) => {
       return index >= currentIdx && index < currentIdx + length;
     });
@@ -117,17 +161,42 @@ class Carousel extends Component {
           <Typography variant="h4" gutterBottom>
             Top Recommendations For You
           </Typography>
-          <Grid
-            container
-            className={classes.list}
-            justify="center"
-            spacing={16}
-          >
-            {showing.map(item => (
-              <Grid key={item.id} item>
-                <CardItem item={item} handleItemLike={this.handleItemLike} />
+          <Grid item xs={12} className={classes.listContainer}>
+            <CSSTransitionGroup
+              transitionName={{
+                appear: classes.slideAppear,
+                appearActive: classes.slideAppearActive,
+                enter: isNext ? classes.slideEnterNext : classes.slideEnterPrev,
+                enterActive: classes.slideEnterActive,
+                leave: classes.slideExit,
+                leaveActive: isNext
+                  ? classes.slideExitNextActive
+                  : classes.slideExitPrevActive
+              }}
+              transitionAppear={true}
+              transitionEnter={true}
+              transitionLeave={true}
+              transitionAppearTimeout={500}
+              transitionEnterTimeout={500}
+              transitionLeaveTimeout={500}
+            >
+              <Grid
+                container
+                className={classes.list}
+                justify="center"
+                spacing={16}
+                key={currentIdx}
+              >
+                {showing.map(item => (
+                  <Grid key={item.id} item>
+                    <CardItem
+                      item={item}
+                      handleItemLike={this.handleItemLike}
+                    />
+                  </Grid>
+                ))}
               </Grid>
-            ))}
+            </CSSTransitionGroup>
           </Grid>
         </Grid>
         <button

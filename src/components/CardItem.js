@@ -1,6 +1,7 @@
 import React from "react";
 import Card from "@material-ui/core/Card";
 import CardMedia from "@material-ui/core/CardMedia";
+import Typography from "@material-ui/core/Typography";
 import FavoriteIcon from "@material-ui/icons/Favorite";
 import { withStyles } from "@material-ui/core/styles";
 
@@ -37,9 +38,9 @@ function CardItem(props) {
     props.handleItemLike(id);
   };
   return (
-    <Card className={classes.card}>
-      {item ? (
-        <React.Fragment>
+    <React.Fragment>
+      <Card className={classes.card}>
+        {item ? (
           <CardMedia className={classes.media} image={item.image}>
             <button
               className={classes.likeButton}
@@ -48,9 +49,11 @@ function CardItem(props) {
               <FavoriteIcon className={classes.likeIcon} />
             </button>
           </CardMedia>
-        </React.Fragment>
-      ) : null}
-    </Card>
+        ) : null}
+      </Card>
+      <Typography variant="subtitle2">{item.name}</Typography>
+      <Typography variant="caption">{item.definingInfo}</Typography>
+    </React.Fragment>
   );
 }
 
