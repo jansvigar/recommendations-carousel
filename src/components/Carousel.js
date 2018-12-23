@@ -4,17 +4,20 @@ import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import { CSSTransitionGroup } from "react-transition-group";
 import CardItem from "./CardItem";
-import { API_URL } from "../config";
+import { USER_ID } from "../config";
+import { getUserItems, rateUserItem } from "../api";
 
 const styles = theme => ({
   root: {
     width: "880px",
     margin: "auto",
+    paddingTop: "100px",
+    paddingBottom: "100px",
     position: "relative"
   },
   listContainer: {
     position: "relative",
-    height: 360,
+    height: 400,
     overflow: "hidden"
   },
   list: {
@@ -35,8 +38,8 @@ const styles = theme => ({
     border: 0,
     backgroundColor: "transparent",
     boxSizing: "border-box",
-    borderBottom: "3px solid black",
-    borderLeft: "3px solid black",
+    borderBottom: "3px solid white",
+    borderLeft: "3px solid white",
     cursor: "pointer",
     padding: "3px"
   },
@@ -90,42 +93,21 @@ class Carousel extends Component {
   newItems = [];
 
   componentDidMount() {
-    fetch(`${API_URL}/users/1/items?amt=20`)
-      .then(res => res.json())
-      .then(json =>
-        this.setState(
-          {
-            items: json.items.filter(
-              (item, index) => index < this.state.maxLength
-            )
-          },
-          () => {
-            this.newItems.push(
-              ...json.items.filter(
-                (item, index) => index >= this.state.maxLength
-              )
-            );
-          }
-        )
-      );
+    const { maxLength } = this.state;
+    getUserItems(USER_ID, 20).then(json => {
+      const data = json.items;
+      this.setState({ items: data.slice(0, maxLength) }, () => {
+        this.newItems.push(...data.slice(maxLength));
+      });
+    });
   }
   fetchEarly = () => {
-    const seenParams = this.state.items.reduce((params, item, index) => {
-      return index === 0 ? `&seen=${item.id}` : `${params}&seen=${item.id}`;
-    }, "");
-
-    fetch(`${API_URL}/users/1/items?amt=4${seenParams}`)
-      .then(res => res.json())
-      .then(json => this.newItems.push(...json.items));
+    getUserItems(USER_ID, 4, this.state.items).then(json =>
+      this.newItems.push(...json.items)
+    );
   };
   handleItemLike = id => {
-    fetch(`${API_URL}/users/1/items/${id}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ rating: "like" })
-    }).then(response => {
+    rateUserItem(USER_ID, id, "like").then(response => {
       if (this.newItems.length <= 1) this.fetchEarly();
       const newItem = this.newItems.pop();
       const newItems = this.state.items.map(item => {
@@ -158,7 +140,7 @@ class Carousel extends Component {
     return (
       <Grid container className={classes.root} spacing={16}>
         <Grid item xs={12}>
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h5" gutterBottom>
             Top Recommendations For You
           </Typography>
           <Grid item xs={12} className={classes.listContainer}>
@@ -173,9 +155,6 @@ class Carousel extends Component {
                   ? classes.slideExitNextActive
                   : classes.slideExitPrevActive
               }}
-              transitionAppear={true}
-              transitionEnter={true}
-              transitionLeave={true}
               transitionAppearTimeout={500}
               transitionEnterTimeout={500}
               transitionLeaveTimeout={500}
