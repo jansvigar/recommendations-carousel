@@ -1,6 +1,7 @@
 import React from "react";
 import Card from "@material-ui/core/Card";
 import CardMedia from "@material-ui/core/CardMedia";
+import FavoriteIcon from "@material-ui/icons/Favorite";
 import { withStyles } from "@material-ui/core/styles";
 
 const styles = theme => ({
@@ -8,7 +9,25 @@ const styles = theme => ({
     width: 200
   },
   media: {
-    height: 300
+    height: 300,
+    position: "relative"
+  },
+  likeIcon: {
+    fontSize: 32,
+    color: "#fff",
+    "&:hover": {
+      color: "red"
+    }
+  },
+  likeButton: {
+    position: "absolute",
+    right: 5,
+    top: 5,
+    backgroundColor: "transparent",
+    cursor: "pointer",
+    border: 0,
+    margin: 0,
+    padding: 0
   }
 });
 
@@ -16,7 +35,15 @@ function CardItem(props) {
   const { classes, item } = props;
   return (
     <Card className={classes.card}>
-      {item ? <CardMedia className={classes.media} image={item.image} /> : null}
+      {item ? (
+        <React.Fragment>
+          <CardMedia className={classes.media} image={item.image}>
+            <button className={classes.likeButton}>
+              <FavoriteIcon className={classes.likeIcon} />
+            </button>
+          </CardMedia>
+        </React.Fragment>
+      ) : null}
     </Card>
   );
 }

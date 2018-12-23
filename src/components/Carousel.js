@@ -8,7 +8,31 @@ import { API_URL } from "../config";
 const styles = theme => ({
   root: {
     width: "866px",
-    margin: "auto"
+    margin: "auto",
+    position: "relative"
+  },
+  carouselControl: {
+    display: "inline-block",
+    position: "absolute",
+    top: "50%",
+    right: -20,
+    width: "2vw",
+    height: "2vw",
+    border: 0,
+    backgroundColor: "transparent",
+    boxSizing: "border-box",
+    borderBottom: "3px solid black",
+    borderLeft: "3px solid black",
+    cursor: "pointer",
+    padding: "3px"
+  },
+  next: {
+    transform: "rotate(-135deg)",
+    right: -20
+  },
+  prev: {
+    transform: "rotate(45deg)",
+    left: -20
   }
 });
 
@@ -24,13 +48,13 @@ class Carousel extends Component {
       .then(res => res.json())
       .then(json => this.setState({ items: json.items }));
   }
-  handlePrevious = () => {
+  handlePreviousClick = () => {
     this.setState(prevState => {
       const newIdx = prevState.currentIdx - prevState.length;
       return newIdx >= 0 ? { currentIdx: newIdx } : prevState;
     });
   };
-  handleNext = () => {
+  handleNextClick = () => {
     const { maxLength } = this.state;
     this.setState(prevState => {
       const newIdx = prevState.currentIdx + prevState.length;
@@ -62,8 +86,14 @@ class Carousel extends Component {
             ))}
           </Grid>
         </Grid>
-        <button onClick={this.handlePrevious}>Previous</button>
-        <button onClick={this.handleNext}>Next</button>
+        <button
+          className={`${classes.carouselControl} ${classes.prev}`}
+          onClick={this.handlePreviousClick}
+        />
+        <button
+          className={`${classes.carouselControl} ${classes.next}`}
+          onClick={this.handleNextClick}
+        />
       </Grid>
     );
   }
