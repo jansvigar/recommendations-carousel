@@ -33,12 +33,18 @@ const styles = theme => ({
 
 function CardItem(props) {
   const { classes, item } = props;
+  const handleLikeIconClick = id => () => {
+    props.handleItemLike(id);
+  };
   return (
     <Card className={classes.card}>
       {item ? (
         <React.Fragment>
           <CardMedia className={classes.media} image={item.image}>
-            <button className={classes.likeButton}>
+            <button
+              className={classes.likeButton}
+              onClick={handleLikeIconClick(item.id)}
+            >
               <FavoriteIcon className={classes.likeIcon} />
             </button>
           </CardMedia>

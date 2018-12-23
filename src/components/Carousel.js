@@ -43,11 +43,55 @@ class Carousel extends Component {
     length: 4,
     maxLength: 16
   };
+
+  newItems = [];
+
   componentDidMount() {
-    fetch(`${API_URL}/users/1/items?amt=16`)
+    fetch(`${API_URL}/users/1/items?amt=20`)
       .then(res => res.json())
-      .then(json => this.setState({ items: json.items }));
+      .then(json =>
+        this.setState(
+          {
+            items: json.items.filter(
+              (item, index) => index < this.state.maxLength
+            )
+          },
+          () => {
+            this.newItems.push(
+              ...json.items.filter(
+                (item, index) => index >= this.state.maxLength
+              )
+            );
+            console.log(this.newItems);
+          }
+        )
+      );
   }
+  fetchEarly = () => {
+    const seenParams = this.state.items.reduce((params, item, index) => {
+      return index === 0 ? `&seen=${item.id}` : `${params}&seen=${item.id}`;
+    }, "");
+
+    fetch(`${API_URL}/users/1/items?amt=4${seenParams}`)
+      .then(res => res.json())
+      .then(json => this.newItems.push(...json.items));
+  };
+  handleItemLike = id => {
+    fetch(`${API_URL}/users/1/items/${id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ rating: "like" })
+    }).then(response => {
+      if (this.newItems.length <= 1) this.fetchEarly();
+      const newItem = this.newItems.pop();
+      const newItems = this.state.items.map(item => {
+        return item.id === id ? newItem : item;
+      });
+      this.setState({ items: newItems });
+    });
+  };
   handlePreviousClick = () => {
     this.setState(prevState => {
       const newIdx = prevState.currentIdx - prevState.length;
@@ -81,7 +125,7 @@ class Carousel extends Component {
           >
             {showing.map(item => (
               <Grid key={item.id} item>
-                <CardItem item={item} />
+                <CardItem item={item} handleItemLike={this.handleItemLike} />
               </Grid>
             ))}
           </Grid>
