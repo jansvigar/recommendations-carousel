@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { withStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
@@ -32,7 +33,6 @@ const styles = theme => ({
     display: "inline-block",
     position: "absolute",
     top: "48%",
-    right: -20,
     width: "2vw",
     height: "2vw",
     border: 0,
@@ -128,7 +128,7 @@ class Carousel extends Component {
             Top Recommendations For You
           </Typography>
           <Grid item xs={12} className={classes.listContainer}>
-            <Slide timeout={500} isNext={isNext}>
+            <Slide timeout={500} toRight={isNext}>
               <Grid
                 container
                 className={classes.list}
@@ -160,5 +160,9 @@ class Carousel extends Component {
     );
   }
 }
+
+Carousel.propTypes = {
+  classes: PropTypes.object.isRequired
+};
 
 export default withStyles(styles)(Carousel);

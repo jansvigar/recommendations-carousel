@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { withStyles } from "@material-ui/core/styles";
 import { CSSTransitionGroup } from "react-transition-group";
 
@@ -34,16 +35,16 @@ const styles = {
 };
 
 const Slide = props => {
-  const { classes, isNext, timeout, children } = props;
+  const { classes, toRight = true, timeout = 500, children } = props;
   return (
     <CSSTransitionGroup
       transitionName={{
         appear: classes.slideAppear,
         appearActive: classes.slideAppearActive,
-        enter: isNext ? classes.slideEnterNext : classes.slideEnterPrev,
+        enter: toRight ? classes.slideEnterNext : classes.slideEnterPrev,
         enterActive: classes.slideEnterActive,
         leave: classes.slideExit,
-        leaveActive: isNext
+        leaveActive: toRight
           ? classes.slideExitNextActive
           : classes.slideExitPrevActive
       }}
@@ -54,6 +55,13 @@ const Slide = props => {
       {children}
     </CSSTransitionGroup>
   );
+};
+
+Slide.propTypes = {
+  timeout: PropTypes.number,
+  children: PropTypes.node.isRequired,
+  classes: PropTypes.object.isRequired,
+  toRight: PropTypes.bool
 };
 
 export default withStyles(styles)(Slide);

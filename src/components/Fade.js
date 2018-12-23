@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { withStyles } from "@material-ui/core/styles";
 import { CSSTransitionGroup } from "react-transition-group";
 
@@ -20,7 +21,7 @@ const styles = {
 };
 
 const Fade = props => {
-  const { classes, children, timeout } = props;
+  const { classes, children, timeout = 1000 } = props;
   return (
     <CSSTransitionGroup
       transitionName={{
@@ -39,6 +40,12 @@ const Fade = props => {
       {children}
     </CSSTransitionGroup>
   );
+};
+
+Fade.propTypes = {
+  timeout: PropTypes.number,
+  children: PropTypes.node.isRequired,
+  classes: PropTypes.object.isRequired
 };
 
 export default withStyles(styles)(Fade);
